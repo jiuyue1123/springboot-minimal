@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
             log.debug("access details method={} path={} query={} params={} headers={}",
                     method,
                     path,
-                    abbreviate(request.getQueryString()),
+                    describeQueryString(request.getQueryString()),
                     describeParameters(request),
                     describeHeaders(request));
         }
@@ -95,6 +96,25 @@ public class AccessLogFilter extends OncePerRequestFilter {
         }
         String remoteAddr = request.getRemoteAddr();
         return remoteAddr == null ? UNKNOWN : remoteAddr;
+    }
+
+    private String describeQueryString(String queryString) {
+        if (!StringUtils.hasText(queryString)) {
+            return "-";
+        }
+        return Arrays.stream(queryString.split("&"))
+                .map(this::maskQueryParameter)
+                .collect(Collectors.joining("&"));
+    }
+
+    private String maskQueryParameter(String parameter) {
+        int separator = parameter.indexOf('=');
+        if (separator < 0) {
+            return isSensitive(parameter) ? MASK : parameter;
+        }
+        String name = parameter.substring(0, separator);
+        String value = parameter.substring(separator + 1);
+        return name + '=' + (isSensitive(name) ? MASK : abbreviate(value));
     }
 
     private String describeParameters(HttpServletRequest request) {
