@@ -26,6 +26,7 @@ import java.io.IOException;
  * @author nanak
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class TraceIdFilter extends OncePerRequestFilter {
 
     @Override
