@@ -1,0 +1,15 @@
+# Normalize line endings on commit and check out LF on every platform
+* text=auto eol=lf
+
+# Windows batch scripts require CRLF to run correctly
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets must not be converted or diffed as text
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

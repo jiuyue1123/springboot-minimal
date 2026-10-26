@@ -1,0 +1,24 @@
+# Copy this file to application-dev.yml and adjust the values for your machine.
+# application-dev.yml is ignored by git; this example stays in the repository.
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: "jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:springboot_minimal}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.web: debug
