@@ -1,0 +1,13 @@
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+**/target
+logs
+*.log
+.env
+.env.*
+**/application-dev.yml
+Dockerfile
+.dockerignore

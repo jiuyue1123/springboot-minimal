@@ -1,0 +1,90 @@
+name: springboot-minimal-prod
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: springboot-minimal:${APP_VERSION:-latest}
+    container_name: springboot-minimal-app
+    restart: unless-stopped
+    stop_grace_period: 70s
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE:-springboot_minimal}
+      DB_USERNAME: ${MYSQL_USER:-springboot}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      JAVA_OPTS: "${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    networks:
+      - backend
+    logging: *default-logging
+
+  mysql:
+    image: mysql:8.4.11
+    container_name: springboot-minimal-mysql
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-springboot_minimal}
+      MYSQL_USER: ${MYSQL_USER:-springboot}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend
+    logging: *default-logging
+
+  redis:
+    image: redis:8.10.2
+    container_name: springboot-minimal-redis
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+    logging: *default-logging
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  backend:
+    driver: bridge

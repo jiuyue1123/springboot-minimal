@@ -1,0 +1,74 @@
+name: springboot-minimal-dev
+
+# Base services (mysql, redis) start by default so the app can run from the IDE.
+# Start the application container too with: --profile app
+
+services:
+  app:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: springboot-minimal:dev
+    container_name: springboot-minimal-app-dev
+    restart: unless-stopped
+    stop_grace_period: 70s
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/springboot_minimal?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      JAVA_OPTS: "-XX:MaxRAMPercentage=75.0"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+  mysql:
+    image: mysql:8.4.11
+    container_name: springboot-minimal-mysql
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: springboot_minimal
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:8.10.2
+    container_name: springboot-minimal-redis
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mysql-data:
+  redis-data:
