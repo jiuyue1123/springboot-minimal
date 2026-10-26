@@ -193,7 +193,7 @@ Exception details are logged, never returned.
 ### Image
 
 The `Dockerfile` builds the thin jar in a Maven stage and runs it on
-`eclipse-temurin:17-jre-jammy` as a non-root user. Dependencies are loaded from `/app/libs`
+`eclipse-temurin:17-jre-alpine` as a non-root user. Dependencies are loaded from `/app/libs`
 through `loader.path`. The image defaults to the `prod` profile and requires the database
 variables.
 
