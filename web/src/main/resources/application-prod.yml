@@ -6,6 +6,10 @@ spring:
     url: "jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      password: ${REDIS_PASSWORD}
 
 springdoc:
   api-docs:

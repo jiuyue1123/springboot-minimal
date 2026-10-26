@@ -24,6 +24,7 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/springboot_minimal?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      REDIS_HOST: redis
       JAVA_OPTS: "-XX:MaxRAMPercentage=75.0"
     ports:
       - "${APP_PORT:-8080}:8080"

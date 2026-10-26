@@ -102,6 +102,10 @@ deployment assets.
 | `DB_NAME` | `springboot_minimal` / `springboot_minimal_test` | yes | Database name |
 | `DB_USERNAME` | `root` | yes | Database user |
 | `DB_PASSWORD` | `root` | yes | Database password |
+| `REDIS_HOST` | `localhost` | yes | Redis host |
+| `REDIS_PORT` | `6379` | no, defaults to `6379` | Redis port |
+| `REDIS_DATABASE` | `0` | no, defaults to `0` | Redis database index |
+| `REDIS_PASSWORD` | none | yes | Redis password |
 
 `.env.example` documents the variables. Spring Boot does not load `.env` automatically; pass
 them through the IDE run configuration, Compose, or the shell.
@@ -112,8 +116,9 @@ them through the IDE run configuration, Compose, or the shell.
   them `V1__init.sql`, `V2__add_user.sql`, and so on.
 - MyBatis-Plus generates snowflake ids (`assign_id`), stores enums by name and limits pages to
   500 rows.
-- Redis is provided by the development Compose file for future use; the application does not
-  depend on it yet.
+- Redis is wired through Spring Data Redis. `RedisConfig` exposes a
+  `RedisTemplate<String, Object>` with string keys and typed JSON values; connection settings
+  use the standard `spring.data.redis.*` properties.
 
 ## API conventions
 

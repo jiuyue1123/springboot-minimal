@@ -28,6 +28,8 @@ services:
       DB_NAME: ${MYSQL_DATABASE:-springboot_minimal}
       DB_USERNAME: ${MYSQL_USER:-springboot}
       DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
       JAVA_OPTS: "${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}"
     ports:
       - "${APP_PORT:-8080}:8080"
