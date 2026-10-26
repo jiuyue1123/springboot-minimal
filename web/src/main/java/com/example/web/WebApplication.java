@@ -10,7 +10,7 @@ import java.util.TimeZone;
  *
  * @author nanak
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example")
 public class WebApplication {
 
     private static final String DEFAULT_TIME_ZONE = "Asia/Shanghai";

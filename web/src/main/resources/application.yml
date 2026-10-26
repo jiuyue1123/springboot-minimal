@@ -41,3 +41,19 @@ info:
   app:
     name: ${spring.application.name}
     version: @project.version@
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  packages-to-scan: com.example
+  paths-to-match: /**
+  default-produces-media-type: application/json
+
+openapi:
+  info:
+    title: Spring Boot Minimal API
+    description: Starter template API for Spring Boot services

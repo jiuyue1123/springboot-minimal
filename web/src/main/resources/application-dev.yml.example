@@ -19,6 +19,13 @@ management:
     health:
       show-details: always
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    try-it-out-enabled: true
+
 logging:
   level:
     com.example.web: debug

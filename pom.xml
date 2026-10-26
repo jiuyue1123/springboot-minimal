@@ -32,6 +32,7 @@
         <spring-cloud-alibaba.version>2025.0.0.0</spring-cloud-alibaba.version>
         <mybatis-plus.version>3.5.17</mybatis-plus.version>
         <mapstruct.version>1.6.3</mapstruct.version>
+        <springdoc.version>2.9.1</springdoc.version>
     </properties>
 
     <dependencyManagement>
