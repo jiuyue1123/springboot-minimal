@@ -2,8 +2,8 @@
 
 A minimal, multi-module Spring Boot template for new services. It ships the cross-cutting
 pieces most services need on day one: a unified response envelope, error codes, exception
-handling, trace ids, access logs, persistence with Flyway, API documentation and container
-deployment assets.
+handling, trace ids, access logs, persistence with Flyway, Redis, API documentation and
+container deployment assets.
 
 ## Tech stack
 
@@ -12,6 +12,7 @@ deployment assets.
 | Java | 17 |
 | Framework | Spring Boot 3.5.16 |
 | Persistence | MyBatis-Plus 3.5.17, Flyway, MySQL 8.4 |
+| Cache | Spring Data Redis, Redis 8 |
 | Validation | Jakarta Bean Validation (Hibernate Validator) |
 | API docs | springdoc-openapi 2.9.1 |
 | Utilities | Lombok, MapStruct |
@@ -29,7 +30,7 @@ deployment assets.
 │       └── utils/               # ThrowUtils, TraceIdUtils
 ├── web/                         # Spring Boot application
 │   ├── src/main/java/com/example/web
-│   │   ├── config/              # MyBatis-Plus and OpenAPI configuration
+│   │   ├── config/              # MyBatis-Plus, Redis and OpenAPI configuration
 │   │   ├── controller/          # Sample endpoints
 │   │   ├── exception/           # GlobalExceptionHandler
 │   │   └── filter/              # TraceIdFilter, AccessLogFilter
@@ -47,6 +48,9 @@ deployment assets.
 - JDK 17+
 - Maven 3.9+
 - Docker with the Compose plugin (optional, for MySQL and Redis)
+
+The parent sets `maven.compiler.proc=full`, so Lombok keeps working when the build runs on
+JDK 23 or newer, where implicit annotation processing is disabled by default.
 
 ## Quick start
 
@@ -118,7 +122,8 @@ them through the IDE run configuration, Compose, or the shell.
   500 rows.
 - Redis is wired through Spring Data Redis. `RedisConfig` exposes a
   `RedisTemplate<String, Object>` with string keys and typed JSON values; connection settings
-  use the standard `spring.data.redis.*` properties.
+  use the standard `spring.data.redis.*` properties. Dev and test default to
+  `localhost:6379`; prod requires `REDIS_HOST` and `REDIS_PASSWORD`.
 
 ## API conventions
 
@@ -171,14 +176,15 @@ Exception details are logged, never returned.
 | GET | `/test/business-error` | Throws `BusinessException`, responds 404 |
 | GET | `/test/system-error` | Throws an unexpected exception, responds 500 |
 | POST | `/test/validate` | Validates a request body, responds 400 when blank |
+| GET | `/test/redis?key=demo` | Writes and reads a typed JSON value through `RedisTemplate` |
 
 ## Observability
 
 - `TraceIdFilter` stores the trace id in MDC, echoes `X-Trace-Id` and `X-Timestamp`, and clears
   the MDC after each request.
 - `AccessLogFilter` writes `access start` and `access end` lines. With DEBUG enabled for
-  `com.example.web.filter.AccessLogFilter` it also logs query parameters and headers, masking
-  sensitive values.
+  `com.example.web.filter.AccessLogFilter` it also logs the query string, request parameters
+  and headers, masking sensitive values.
 - Logback writes to the console and to `logs/web.log` and `logs/web-error.log` for every
   profile, rolling daily or at 100MB, gzip-compressing archives and keeping 30 days.
 - Actuator exposes `health` and `info`; the `dev` profile exposes every endpoint and shows
@@ -199,8 +205,8 @@ Exception details are logged, never returned.
 
 The `Dockerfile` builds the thin jar in a Maven stage and runs it on
 `eclipse-temurin:17-jre-alpine` as a non-root user. Dependencies are loaded from `/app/libs`
-through `loader.path`. The image defaults to the `prod` profile and requires the database
-variables.
+through `loader.path`. The image defaults to the `prod` profile and requires the database and
+Redis variables.
 
 ### Compose
 
