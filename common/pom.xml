@@ -15,4 +15,11 @@
 
     <name>common</name>
     <description>Pure Java common module</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+        </dependency>
+    </dependencies>
 </project>

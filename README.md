@@ -26,6 +26,7 @@ container deployment assets.
 ├── common/                      # Pure Java shared module, no Spring dependencies
 │   └── src/main/java/com/example/common
 │       ├── constant/            # MDC key and header names
+│       ├── entity/              # BaseEntity (id, version, soft delete, audit)
 │       ├── exception/           # ErrorCode, BusinessException
 │       ├── result/              # Result, PageResult
 │       └── utils/               # ThrowUtils, TraceIdUtils
@@ -34,7 +35,8 @@ container deployment assets.
 │   │   ├── config/              # MyBatis-Plus, Redis and OpenAPI configuration
 │   │   ├── controller/          # Sample endpoints
 │   │   ├── exception/           # GlobalExceptionHandler
-│   │   └── filter/              # TraceIdFilter, AccessLogFilter
+│   │   ├── filter/              # TraceIdFilter, AccessLogFilter
+│   │   └── mybatis/             # AuditMetaObjectHandler
 │   ├── src/main/resources
 │   │   ├── db/migration/        # Flyway migrations
 │   │   ├── application*.yml     # Base and profile configuration
@@ -129,6 +131,29 @@ them through the IDE run configuration, Compose, or the shell.
   `RedisTemplate<String, Object>` with string keys and typed JSON values; connection settings
   use the standard `spring.data.redis.*` properties. Dev and test default to
   `localhost:6379`; prod requires `REDIS_HOST` and `REDIS_PASSWORD`.
+
+### Entity model
+
+Entities extend `BaseEntity` from the common module:
+
+```java
+@TableName("t_user")
+public class User extends BaseEntity {
+
+    private String username;
+}
+```
+
+| Field | Column | Behaviour |
+| --- | --- | --- |
+| `id` | `id BIGINT UNSIGNED` | Snowflake id assigned by MyBatis-Plus |
+| `version` | `version` | Optimistic lock counter, seeded with `0` on insert |
+| `deletedAt` | `deleted_at` | Soft delete marker: `NULL` while active, `NOW()` after delete |
+| `gmtCreate` | `gmt_create` | Filled on insert by `AuditMetaObjectHandler` |
+| `gmtModified` | `gmt_modified` | Filled on insert and update |
+
+Selects automatically filter on `deleted_at IS NULL`, deletes become timestamp updates, and
+updates use the `version` column for optimistic locking.
 
 ## API conventions
 
