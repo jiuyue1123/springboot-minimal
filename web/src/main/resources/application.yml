@@ -75,6 +75,16 @@ management:
     env:
       enabled: true
 
+app:
+  cors:
+    enabled: true
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: "*"
+    exposed-headers: X-Trace-Id,X-Timestamp
+    allow-credentials: true
+    max-age: 3600
+
 info:
   app:
     name: ${spring.application.name}
