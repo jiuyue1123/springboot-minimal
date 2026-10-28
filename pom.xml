@@ -39,6 +39,7 @@
         <redisson.version>3.46.0</redisson.version>
         <git-commit-id.version>9.2.0</git-commit-id.version>
         <logstash-logback.version>9.0</logstash-logback.version>
+        <tika.version>3.2.3</tika.version>
     </properties>
 
     <dependencyManagement>
