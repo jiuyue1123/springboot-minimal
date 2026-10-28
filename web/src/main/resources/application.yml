@@ -22,6 +22,14 @@ spring:
       port: ${REDIS_PORT:6379}
       database: ${REDIS_DATABASE:0}
       timeout: 3s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 30m
+      cache-null-values: false
+      key-prefix: "springboot-minimal::"
+      use-key-prefix: true
+      enable-statistics: true
 
 mybatis-plus:
   configuration:

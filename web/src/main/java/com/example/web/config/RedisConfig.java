@@ -15,8 +15,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * <p>Keys are plain strings and values are JSON carrying type information, so arbitrary
  * objects round-trip through {@link RedisTemplate}. A copy of the application
  * {@link ObjectMapper} is used, keeping {@code @class} metadata out of HTTP responses and
- * reusing Jackson settings such as Java time support. Only trusted Redis data should be
- * deserialized with this template.</p>
+ * reusing Jackson settings such as Java time support. The same serializer backs Spring Cache
+ * values. Only trusted Redis data should be deserialized with it.</p>
  *
  * @author nanak
  */
@@ -24,16 +24,18 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory,
-                                                       ObjectMapper objectMapper) {
+    public GenericJackson2JsonRedisSerializer redisValueSerializer(ObjectMapper objectMapper) {
         ObjectMapper redisObjectMapper = objectMapper.copy();
         redisObjectMapper.activateDefaultTyping(
                 redisObjectMapper.getPolymorphicTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL,
                 JsonTypeInfo.As.PROPERTY);
+        return new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+    }
 
-        GenericJackson2JsonRedisSerializer valueSerializer =
-                new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory,
+                                                       GenericJackson2JsonRedisSerializer valueSerializer) {
         StringRedisSerializer keySerializer = new StringRedisSerializer();
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();

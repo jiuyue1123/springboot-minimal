@@ -12,7 +12,7 @@ container deployment assets.
 | Java | 17 |
 | Framework | Spring Boot 3.5.16 |
 | Persistence | MyBatis-Plus 3.5.17, Flyway, MySQL 8.4 |
-| Cache | Spring Data Redis, Redis 8 |
+| Cache | Spring Cache, Spring Data Redis, Redis 8 |
 | Validation | Jakarta Bean Validation (Hibernate Validator) |
 | API docs | springdoc-openapi 2.9.1 |
 | Utilities | Lombok, MapStruct |
@@ -154,6 +154,25 @@ public class User extends BaseEntity {
 
 Selects automatically filter on `deleted_at IS NULL`, deletes become timestamp updates, and
 updates use the `version` column for optimistic locking.
+
+### Caching
+
+Spring Cache is enabled with Redis as the backend. Defaults live in `spring.cache.redis.*`:
+a 30 minute TTL, null values are not cached and keys are prefixed with `springboot-minimal::`.
+Values reuse the typed JSON serializer from `RedisConfig`, so cached objects keep their type
+metadata for non-final classes.
+
+```java
+@Cacheable(cacheNames = "user", key = "#id")
+public User findById(Long id) {
+    ...
+}
+
+@CacheEvict(cacheNames = "user", key = "#id")
+public void update(Long id, UserChange change) {
+    ...
+}
+```
 
 ## API conventions
 
