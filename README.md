@@ -16,6 +16,7 @@ container deployment assets.
 | Validation | Jakarta Bean Validation (Hibernate Validator) |
 | API docs | springdoc-openapi 2.9.1 |
 | Utilities | Lombok, MapStruct |
+| Testing | JUnit 5, MockMvc, Testcontainers |
 | Runtime | Actuator, Logback, Docker |
 
 ## Project layout
@@ -34,10 +35,14 @@ container deployment assets.
 │   │   ├── controller/          # Sample endpoints
 │   │   ├── exception/           # GlobalExceptionHandler
 │   │   └── filter/              # TraceIdFilter, AccessLogFilter
-│   └── src/main/resources
-│       ├── db/migration/        # Flyway migrations
-│       ├── application*.yml     # Base and profile configuration
-│       └── logback-spring.xml   # Logging configuration
+│   ├── src/main/resources
+│   │   ├── db/migration/        # Flyway migrations
+│   │   ├── application*.yml     # Base and profile configuration
+│   │   └── logback-spring.xml   # Logging configuration
+│   └── src/test/java/com/example/web
+│       ├── AbstractIntegrationTest.java      # Testcontainers test base
+│       ├── TestcontainersConfiguration.java  # MySQL and Redis containers
+│       └── controller/                       # Sample integration test
 ├── deploy/                      # Docker Compose for development and production
 ├── Dockerfile
 └── pom.xml                      # Parent aggregator and dependency management
@@ -47,7 +52,7 @@ container deployment assets.
 
 - JDK 17+
 - Maven 3.9+
-- Docker with the Compose plugin (optional, for MySQL and Redis)
+- Docker (for the Compose development dependencies and the Testcontainers integration tests)
 
 The parent sets `maven.compiler.proc=full`, so Lombok keeps working when the build runs on
 JDK 23 or newer, where implicit annotation processing is disabled by default.
@@ -233,10 +238,28 @@ MySQL credentials are applied only when the data volume is initialized for the f
 
 ```bash
 mvn -pl web -am test
+
+# single test class
+mvn -pl web -am test -Dtest=TestControllerIntegrationTest
 ```
 
-`WebApplicationTests` loads the full context, so the configured MySQL database
-(`springboot_minimal_test` under the test profile) must be reachable.
+Integration tests run against disposable MySQL 8.4 and Redis containers started by
+Testcontainers, so a running Docker daemon is required and no external database is needed.
+The first run starts the containers and takes a minute or two; later runs reuse them.
+
+Extend `AbstractIntegrationTest` for new integration tests. It activates the `test` profile,
+imports `TestcontainersConfiguration`, prepares MockMvc and shares one cached application
+context, so container startup is paid once per suite:
+
+```java
+class UserApiTest extends AbstractIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+}
+```
+
+Unit tests that need no infrastructure should not extend the base class.
 
 ## Extending
 
