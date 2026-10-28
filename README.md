@@ -37,7 +37,8 @@ container deployment assets.
 │   │   ├── controller/          # Sample endpoints
 │   │   ├── exception/           # GlobalExceptionHandler
 │   │   ├── filter/              # TraceIdFilter, AccessLogFilter
-│   │   └── mybatis/             # AuditMetaObjectHandler
+│   │   ├── mybatis/             # AuditMetaObjectHandler
+│   │   └── utils/               # MimeTypeUtils
 │   ├── src/main/resources
 │   │   ├── db/migration/        # Flyway migrations
 │   │   ├── application*.yml     # Base and profile configuration
@@ -118,6 +119,7 @@ JDK 23 or newer, where implicit annotation processing is disabled by default.
 | `REDIS_PORT` | `6379` | no, defaults to `6379` | Redis port |
 | `REDIS_DATABASE` | `0` | no, defaults to `0` | Redis database index |
 | `REDIS_PASSWORD` | none | yes | Redis password |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | recommended | Comma-separated browser origins allowed to call the API |
 
 `.env.example` documents the variables. Spring Boot does not load `.env` automatically; pass
 them through the IDE run configuration, Compose, or the shell.
@@ -174,6 +176,24 @@ public void update(Long id, UserChange change) {
     ...
 }
 ```
+
+### CORS
+
+CORS is configured through `app.cors.*` and enabled by default:
+
+| Property | Default | Description |
+| --- | --- | --- |
+| `enabled` | `true` | Register CORS handling |
+| `allowed-origin-patterns` | `http://localhost:5173` | Origin patterns; `CORS_ALLOWED_ORIGINS` overrides |
+| `allowed-methods` | GET, POST, PUT, PATCH, DELETE, OPTIONS | Allowed methods |
+| `allowed-headers` | `*` | Allowed request headers |
+| `exposed-headers` | `X-Trace-Id`, `X-Timestamp` | Response headers readable by the browser |
+| `allow-credentials` | `true` | Allow cookies and authorization headers |
+| `max-age` | `3600` | Preflight cache in seconds |
+
+Set `CORS_ALLOWED_ORIGINS` (comma separated) or override `app.cors.*` per profile. Set
+`app.cors.enabled=false` when a gateway already answers CORS. Origin patterns accept `*` even
+with credentials, unlike plain allowed origins.
 
 ## API conventions
 
