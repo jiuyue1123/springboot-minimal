@@ -30,6 +30,23 @@ spring:
       key-prefix: "springboot-minimal::"
       use-key-prefix: true
       enable-statistics: true
+  task:
+    execution:
+      pool:
+        core-size: 8
+        max-size: 32
+        queue-capacity: 1000
+      thread-name-prefix: async-
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
+    scheduling:
+      pool:
+        size: 4
+      thread-name-prefix: scheduling-
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
 
 mybatis-plus:
   configuration:

@@ -13,6 +13,7 @@ container deployment assets.
 | Framework | Spring Boot 3.5.16 |
 | Persistence | MyBatis-Plus 3.5.17, Flyway, MySQL 8.4 |
 | Cache | Spring Cache, Spring Data Redis, Redis 8 |
+| Resilience | Redisson, Spring Retry |
 | Validation | Jakarta Bean Validation (Hibernate Validator) |
 | API docs | springdoc-openapi 2.9.1 |
 | Utilities | Lombok, MapStruct |
@@ -238,6 +239,42 @@ Exception details are logged, never returned.
   profile, rolling daily or at 100MB, gzip-compressing archives and keeping 30 days.
 - Actuator exposes `health` and `info`; the `dev` profile exposes every endpoint and shows
   health details.
+
+## Resilience and concurrency
+
+Annotation-driven helpers coordinate work through Redis; raised business errors flow through
+`GlobalExceptionHandler` and keep their HTTP mapping.
+
+| Annotation | Behaviour |
+| --- | --- |
+| `@Idempotent` | Reserves a Redis key before the call and rejects duplicates until it expires; failures release the key |
+| `@RateLimit` | Fixed-window counter in Redis; raises `RATE_LIMIT_EXCEEDED` (429) when the limit is exceeded |
+| `@DistributedLock` | Redisson lock with wait and lease options; the watchdog renews it when no lease is set |
+| `@OperationLog` | Logs description, method, duration and outcome; arguments only at DEBUG when enabled |
+| `@Retryable` | Spring Retry, enabled through `@EnableRetry` |
+| `@Async` / `@Scheduled` | Pools configured through `spring.task.execution.*` and `spring.task.scheduling.*` |
+
+```java
+@OperationLog("create order")
+@Idempotent(key = "#request.orderNo", timeout = 30)
+public Result<Long> create(@RequestBody CreateOrderRequest request) { ... }
+
+@RateLimit(key = "#userId", limit = 20, window = 60)
+public Result<?> report(Long userId) { ... }
+
+@DistributedLock(key = "#orderId", waitTime = 3)
+public void settle(Long orderId) { ... }
+
+@Retryable(retryFor = TransientDataAccessException.class, maxAttempts = 3,
+        backoff = @Backoff(delay = 500, multiplier = 2))
+public void sync() { ... }
+
+@Async
+public CompletableFuture<Void> sendNotification() { ... }
+
+@Scheduled(cron = "0 0 2 * * *")
+public void cleanup() { ... }
+```
 
 ## OpenAPI
 
