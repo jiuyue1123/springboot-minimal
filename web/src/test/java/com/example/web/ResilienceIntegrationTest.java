@@ -1,8 +1,10 @@
 package com.example.web;
 
+import com.example.common.constant.CommonConstants;
 import com.example.common.exception.BusinessException;
 import com.example.common.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
@@ -46,6 +48,17 @@ class ResilienceIntegrationTest extends AbstractIntegrationTest {
     void asyncAndRetryWork() throws Exception {
         assertThat(probe.asyncValue().get(5, TimeUnit.SECONDS)).isEqualTo("async");
         assertThat(probe.retried()).isEqualTo("ok");
+    }
+
+    @Test
+    void asyncPropagatesMdcTraceId() throws Exception {
+        String traceId = "test-async-trace";
+        MDC.put(CommonConstants.MDC_TRACE_ID, traceId);
+        try {
+            assertThat(probe.asyncTraceId().get(5, TimeUnit.SECONDS)).isEqualTo(traceId);
+        } finally {
+            MDC.remove(CommonConstants.MDC_TRACE_ID);
+        }
     }
 
     @Test

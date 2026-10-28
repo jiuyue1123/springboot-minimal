@@ -1,5 +1,6 @@
 package com.example.web;
 
+import com.example.common.constant.CommonConstants;
 import com.example.web.aop.annotation.DistributedLock;
 import com.example.web.aop.annotation.Idempotent;
 import com.example.web.aop.annotation.OperationLog;
@@ -9,6 +10,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
@@ -79,6 +81,11 @@ public class TestcontainersConfiguration {
         @Async
         public CompletableFuture<String> asyncValue() {
             return CompletableFuture.completedFuture("async");
+        }
+
+        @Async
+        public CompletableFuture<String> asyncTraceId() {
+            return CompletableFuture.completedFuture(MDC.get(CommonConstants.MDC_TRACE_ID));
         }
 
         @Retryable(retryFor = IllegalStateException.class, maxAttempts = 3, backoff = @Backoff(delay = 10))
