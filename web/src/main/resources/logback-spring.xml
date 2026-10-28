@@ -82,11 +82,34 @@
         <appender-ref ref="ERROR_FILE"/>
     </appender>
 
-    <!-- Every profile writes to the coloured console and to the rolling files -->
-    <root level="INFO">
-        <appender-ref ref="ASYNC_CONSOLE"/>
-        <appender-ref ref="ASYNC_FILE"/>
-        <appender-ref ref="ASYNC_ERROR_FILE"/>
-    </root>
+    <!-- Regular profiles write to the coloured console and to the rolling files -->
+    <springProfile name="!json">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+            <appender-ref ref="ASYNC_ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- The json profile switches the console to one JSON object per line -->
+    <springProfile name="json">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdc>true</includeMdc>
+                <customFields>{"app":"${APP_NAME}"}</customFields>
+            </encoder>
+        </appender>
+
+        <appender name="ASYNC_JSON_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="JSON_CONSOLE"/>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON_CONSOLE"/>
+        </root>
+    </springProfile>
 
 </configuration>

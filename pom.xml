@@ -37,6 +37,8 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <springdoc.version>2.9.1</springdoc.version>
         <redisson.version>3.46.0</redisson.version>
+        <git-commit-id.version>9.2.0</git-commit-id.version>
+        <logstash-logback.version>9.0</logstash-logback.version>
     </properties>
 
     <dependencyManagement>

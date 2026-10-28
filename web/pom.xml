@@ -38,6 +38,13 @@
         </dependency>
 
         <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
@@ -141,6 +148,40 @@
                         </include>
                     </includes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>build-info</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>${git-commit-id.version}</version>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <includeOnlyProperties>
+                        <property>git.branch</property>
+                        <property>git.commit.id</property>
+                        <property>git.commit.id.abbrev</property>
+                        <property>git.commit.time</property>
+                        <property>git.build.time</property>
+                    </includeOnlyProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>git-commit-id</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- 将依赖复制到 target/libs -->
             <plugin>
